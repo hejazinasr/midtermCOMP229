@@ -1,9 +1,7 @@
-
 // modules required for routing
 let express = require('express');
 let router = express.Router();
 let mongoose = require('mongoose');
-const books = require('../models/books');
 
 // define the book model
 let book = require('../models/books');
@@ -27,110 +25,87 @@ router.get('/', (req, res, next) => {
 
 //  GET the Book Details page in order to add a new Book
 router.get('/add', (req, res, next) => {
-  res.render('books/details', 
-  {title: 'Add books',
-   books: {
-    "Title": null,
-    "Price": null, 
-    "Author": null,
-    "Genre": null
-      },
+  // Redirects user to Details Page
+  res.render('books/details', {
+    title: 'Add a Book',
+    books: '',
+    action: '/books/add'
   });
-
-
-    /*****************
-     * ADD CODE HERE *
-     *****************/
 
 });
 
 // POST process the Book Details page and create a new Book - CREATE
 router.post('/add', (req, res, next) => {
-  let newBook = book({
-    "Title": req.body.title,
-    "Price": req.body.price,
-    "Author": req.body.author,
-    "Genre":req.body.genre,
-})
-
-books.create(newBook, (err, books) => {
-    if(err) {
-        console.log(err);
-        res.end(err);
+  // Gets data from the form
+  let data = req.body;
+  // Formats data accordinly 
+  const newBook = {
+    Title: data.title,
+    Description: data.description,
+    Price: parseInt(data.price),
+    Author: data.author,
+    Genre: data.genre
+  }
+  // Creates the book on MongoDB
+  book.create(newBook, function(err, result) {
+    if (err) {
+      res.send(err);
     } else {
-        //refresh contact list
-        res.redirect('/books');
+      res.redirect('/books');
     }
-})
-
-
-    /*****************
-     * ADD CODE HERE *
-     *****************/
-     
-
-
+  });
 });
 
 // GET the Book Details page in order to edit an existing Book
 router.get('/:id', (req, res, next) => {
-
-    /*****************
-     * ADD CODE HERE *
-     *****************/
-     let id = new mongoose.Types.ObjectId(req.params.id);
-    book.findById(id, (err, bookToEdit) => {
-      if(err) {
-        console.log(err);
-        res.end(err);
-      } else {
-        res.render('books/details', {title: 'Edit Book', books: bookToEdit})
-      }
-    })
-
+  book.findById( req.params.id , (err, book) => {
+    if (err) {
+      return console.error(err);
+    }
+    else {
+      // Redirects user to Details Page
+      res.render('books/details', {
+        title: 'Edit a Book',
+        books: book,
+        action: ''
+      });
+    }
+  });
+    
 });
 
 // POST - process the information passed from the details form and update the document
 router.post('/:id', (req, res, next) => {
-
-    /*****************
-     * ADD CODE HERE *
-     *****************/
-    
-    let id = new mongoose.Types.ObjectId(req.params.id);
-    let bookToEdit = book({
-      "_id": id,
-      "Title": req.body.title,
-      "Price": req.body.price, 
-      "Author": req.body.author,
-      "Genre": req.body.genre
-    })
-    book.updateOne({_id: id}, bookToEdit, (err) => {
-      if(err) {
-        console.log(err);
-        res.end(err);
-      } else {
+    // Gets data from the form
+    let data = req.body;
+    // Formats data accordinly 
+    const upsertData = {
+      Title: data.title,
+      Description: data.description,
+      Price: parseInt(data.price),
+      Author: data.author,
+      Genre: data.genre
+    }
+    book.update( {_id: req.params.id} , upsertData, {upsert: true}, (err, result) => {
+      if (err) {
+        return console.error(err);
+      }
+      else {
         res.redirect('/books');
       }
-    })
-
+    });
 });
 
 // GET - process the delete by user id
 router.get('/delete/:id', (req, res, next) => {
-
-    /*****************
-     * ADD CODE HERE *
-     *****************/
-     let id = new mongoose.Types.ObjectId(req.params.id);
-     book.remove({_id: id}, (err) => {
-       if(err) {
-         console.log(err);
-         res.end(err);
-       } else {
-         res.redirect('/books')
-       }
-     })
+  book.remove( {_id: req.params.id} , (err) => {
+    if (err) {
+      return console.error(err);
+    }
+    else {
+      res.redirect('/books');
+    }
+  });
 });
 
 
