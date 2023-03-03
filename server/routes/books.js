@@ -1,14 +1,15 @@
-// modules required for routing
+//Mohammadali Hejazinasr
+//301223170
+//MidtermCOMP229
+
+
 let express = require('express');
 let router = express.Router();
 let mongoose = require('mongoose');
 
-// define the book model
 let book = require('../models/books');
 
-/* GET books List page. READ */
 router.get('/', (req, res, next) => {
-  // find all books in the books collection
   book.find( (err, books) => {
     if (err) {
       return console.error(err);
@@ -23,9 +24,7 @@ router.get('/', (req, res, next) => {
 
 });
 
-//  GET the Book Details page in order to add a new Book
 router.get('/add', (req, res, next) => {
-  // Redirects user to Details Page
   res.render('books/details', {
     title: 'Add a Book',
     books: '',
@@ -34,11 +33,8 @@ router.get('/add', (req, res, next) => {
 
 });
 
-// POST process the Book Details page and create a new Book - CREATE
 router.post('/add', (req, res, next) => {
-  // Gets data from the form
   let data = req.body;
-  // Formats data accordinly 
   const newBook = {
     Title: data.title,
     Description: data.description,
@@ -46,7 +42,6 @@ router.post('/add', (req, res, next) => {
     Author: data.author,
     Genre: data.genre
   }
-  // Creates the book on MongoDB
   book.create(newBook, function(err, result) {
     if (err) {
       res.send(err);
@@ -56,14 +51,12 @@ router.post('/add', (req, res, next) => {
   });
 });
 
-// GET the Book Details page in order to edit an existing Book
 router.get('/:id', (req, res, next) => {
   book.findById( req.params.id , (err, book) => {
     if (err) {
       return console.error(err);
     }
     else {
-      // Redirects user to Details Page
       res.render('books/details', {
         title: 'Edit a Book',
         books: book,
@@ -74,11 +67,8 @@ router.get('/:id', (req, res, next) => {
     
 });
 
-// POST - process the information passed from the details form and update the document
 router.post('/:id', (req, res, next) => {
-    // Gets data from the form
     let data = req.body;
-    // Formats data accordinly 
     const upsertData = {
       Title: data.title,
       Description: data.description,
@@ -96,7 +86,6 @@ router.post('/:id', (req, res, next) => {
     });
 });
 
-// GET - process the delete by user id
 router.get('/delete/:id', (req, res, next) => {
   book.remove( {_id: req.params.id} , (err) => {
     if (err) {
